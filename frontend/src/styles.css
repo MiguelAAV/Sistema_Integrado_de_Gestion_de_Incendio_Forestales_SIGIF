@@ -2,6 +2,21 @@
   color: #17231f;
   background: #f4f7f1;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: "Playfair Display", Georgia, "Times New Roman", serif;
+  --color-primary: #103d2c;
+  --color-primary-light: #1d5d42;
+  --color-accent: #d36b22;
+  --color-bg: #f4f7f1;
+  --color-card: #ffffff;
+  --color-border: #dde6d8;
+  --color-text: #17231f;
+  --color-text-soft: #667467;
+  --shadow-sm: 0 2px 8px rgba(16, 61, 44, 0.06);
+  --shadow-md: 0 8px 30px rgba(16, 61, 44, 0.08);
+  --shadow-lg: 0 24px 60px rgba(16, 61, 44, 0.12);
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
 }
 
 * {
@@ -22,7 +37,7 @@ body {
 main {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 28px;
+  padding: 32px 28px;
 }
 
 .hero {
@@ -30,10 +45,10 @@ main {
   grid-template-columns: minmax(0, 1fr) 280px;
   gap: 24px;
   align-items: stretch;
-  padding: 32px;
-  border-radius: 28px;
+  padding: 36px;
+  border-radius: var(--radius-xl);
   color: #fff;
-  background: linear-gradient(135deg, #103d2c, #1d5d42 45%, #d36b22);
+  background: linear-gradient(135deg, #0d3523, #1a5338 45%, #b95a1a);
   box-shadow: 0 24px 60px rgba(20, 60, 40, 0.18);
 }
 
@@ -52,10 +67,21 @@ p {
   margin-top: 0;
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+}
+
 h1 {
   margin-bottom: 12px;
   font-size: clamp(2rem, 5vw, 4.5rem);
   line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  letter-spacing: -0.01em;
 }
 
 .hero p:not(.eyebrow) {
@@ -94,39 +120,40 @@ h1 {
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin: 22px 0;
+  gap: 18px;
+  margin: 24px 0;
 }
 
 .metric,
 .panel {
-  border: 1px solid #dde6d8;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 14px 38px rgba(31, 54, 39, 0.08);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  padding: 22px;
 }
 
-.metric {
-  padding: 20px;
+.panel-header {
+  margin-bottom: 18px;
 }
 
-.metric span {
-  display: block;
-  color: #667467;
-  font-size: 0.88rem;
+.panel-header h2 {
+  margin-bottom: 4px;
+  color: var(--color-primary);
+  font-size: 1.25rem;
 }
 
-.metric strong {
-  display: block;
-  margin-top: 8px;
-  color: #143d2d;
-  font-size: 2.1rem;
+.panel-header p {
+  margin-bottom: 0;
+  color: var(--color-text-soft);
+  font-size: 0.9rem;
 }
 
 .grid {
   display: grid;
-  gap: 18px;
-  margin-bottom: 18px;
+  gap: 22px;
+  margin-bottom: 22px;
 }
 
 .two-columns {
@@ -135,26 +162,6 @@ h1 {
 
 .three-columns {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.panel {
-  overflow: hidden;
-  padding: 20px;
-}
-
-.panel-header {
-  margin-bottom: 16px;
-}
-
-.panel-header h2 {
-  margin-bottom: 6px;
-  color: #163b2d;
-  font-size: 1.2rem;
-}
-
-.panel-header p {
-  margin-bottom: 0;
-  color: #6a766d;
 }
 
 .report-form {
@@ -304,15 +311,23 @@ table {
 
 th,
 td {
-  padding: 11px;
+  padding: 12px 14px;
   border-bottom: 1px solid #e0e8dc;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 th {
-  color: #163b2d;
+  color: var(--color-primary);
   background: #edf5e9;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.78rem;
+}
+
+td {
+  color: #2d4738;
 }
 
 .user-info {
@@ -344,17 +359,19 @@ th {
   align-items: center;
   gap: 12px;
   color: #143d2d;
-  font-size: 1.3rem;
-  font-weight: 900;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
   text-decoration: none;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
 .logo-img {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   object-fit: contain;
+  box-shadow: 0 2px 8px rgba(16, 61, 44, 0.15);
 }
 
 .header-nav {
@@ -480,22 +497,28 @@ th {
 
 .login-logo-img {
   display: block;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 14px;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 18px;
   object-fit: contain;
+  filter: drop-shadow(0 4px 16px rgba(16, 61, 44, 0.18));
 }
 
 .login-brand h1 {
   margin-bottom: 6px;
   color: #103d2c;
-  font-size: 2.6rem;
-  letter-spacing: -0.04em;
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  letter-spacing: -0.03em;
+  font-weight: 700;
 }
 
 .login-brand p {
   color: #667467;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  max-width: 320px;
+  margin: 0 auto;
+  line-height: 1.5;
 }
 
 .login-tabs {
