@@ -1,3 +1,7 @@
 packages:
-  - 'backend'
   - 'frontend'
+  - 'backend/gateway'
+  - 'backend/auth'
+  - 'backend/incidents'
+  - 'backend/operations'
+  - 'backend/integrations'

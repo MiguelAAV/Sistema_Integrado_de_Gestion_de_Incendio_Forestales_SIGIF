@@ -1,16 +1,12 @@
 {
   "name": "sigif-mvp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
   "scripts": {
-    "dev": "pnpm --parallel --filter ./backend --filter ./frontend run dev",
-    "dev:backend": "pnpm --filter ./backend dev",
+    "dev": "pnpm --parallel --filter ./frontend run dev & pnpm --parallel --filter ./backend/* run dev",
     "dev:frontend": "pnpm --filter ./frontend dev",
+    "dev:services": "pnpm --parallel --filter ./backend/* run dev",
     "build": "pnpm --filter ./frontend build",
-    "start:backend": "pnpm --filter ./backend start"
+    "install:all": "pnpm install"
   }
 }
