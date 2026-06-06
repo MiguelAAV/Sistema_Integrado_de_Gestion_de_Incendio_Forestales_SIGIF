@@ -36,7 +36,7 @@ const defaultVecinos = [
     rut: "22222222-2", telefono: "987654321", contrasena: "mimaria123",
     direccion: "Calle Los Olivos 456", fechaNacimiento: "1990-05-15",
     fotoPerfil: "", email: "maria.lopez@correo.cl", genero: "Femenino",
-    lat: -35.01, lng: -71.27, acceptedTerms: true, registeredAt: "2026-01-15T10:00:00.000Z"
+    lat: -35.01, lng: -71.27, acceptedTerms: true, tipoRol: "", registeredAt: "2026-01-15T10:00:00.000Z"
   }
 ];
 
@@ -89,15 +89,20 @@ app.post("/api/auth/login", (req, res) => {
     if (!vecino) return res.status(401).json({ message: "Vecino no registrado. Crea una cuenta primero." });
     if (vecino.contrasena !== password) return res.status(401).json({ message: "Contrasena incorrecta" });
     const token = `tok_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    authSessions[token] = { user: vecino, role: "Vecino" };
-    return res.json({ token, user: vecino });
+
+    const effectiveRole = vecino.tipoRol === "bombero" ? "VecinoBombero"
+      : vecino.tipoRol === "funcionario" ? "VecinoFuncionario"
+      : "Vecino";
+
+    authSessions[token] = { user: vecino, role: effectiveRole };
+    return res.json({ token, user: { ...vecino, role: effectiveRole } });
   }
 
   res.status(400).json({ message: "Rol invalido" });
 });
 
 app.post("/api/auth/register", (req, res) => {
-  const { nombre, apellidoPaterno, apellidoMaterno, rut, telefono, contrasena, email, genero, direccion, fechaNacimiento, fotoPerfil, lat, lng, acceptedTerms } = req.body;
+  const { nombre, apellidoPaterno, apellidoMaterno, rut, telefono, contrasena, email, genero, direccion, fechaNacimiento, fotoPerfil, lat, lng, acceptedTerms, tipoRol } = req.body;
 
   if (!acceptedTerms) return res.status(400).json({ message: "Debe aceptar los terminos y condiciones" });
   if (!nombre || !apellidoPaterno || !apellidoMaterno || !rut || !telefono || !contrasena)
@@ -106,21 +111,26 @@ app.post("/api/auth/register", (req, res) => {
   if (registeredVecinos.find((v) => v.rut === rut))
     return res.status(409).json({ message: "RUT ya registrado" });
 
+  const effectiveRole = tipoRol === "bombero" ? "VecinoBombero"
+    : tipoRol === "funcionario" ? "VecinoFuncionario"
+    : "Vecino";
+
   const newVecino = {
     id: registeredVecinos.length + 100,
     name: `${nombre} ${apellidoPaterno} ${apellidoMaterno}`,
-    role: "Vecino", area: "Comunidad",
+    role: effectiveRole, area: "Comunidad",
     nombre, apellidoPaterno, apellidoMaterno, rut, telefono, contrasena,
     email: email || "", genero: genero || "", direccion: direccion || "",
     fechaNacimiento: fechaNacimiento || "", fotoPerfil: fotoPerfil || "",
     lat: lat || null, lng: lng || null,
+    tipoRol: tipoRol || "",
     acceptedTerms: true, registeredAt: new Date().toISOString()
   };
 
   registeredVecinos.push(newVecino);
   saveVecinos();
   const token = `tok_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-  authSessions[token] = { user: newVecino, role: "Vecino" };
+  authSessions[token] = { user: newVecino, role: newVecino.role };
   res.status(201).json({ token, user: newVecino });
 });
 

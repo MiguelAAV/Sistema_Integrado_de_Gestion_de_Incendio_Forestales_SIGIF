@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -137,8 +137,46 @@ export default function FuncionarioDashboard() {
     senapred: null, senapredEvents: [], bomberos: null, bomberosIncidents: []
   });
   const [evacPoints, setEvacPoints] = useState([]);
-  const [form, setForm] = useState({ sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260" });
+  const [form, setForm] = useState({ sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260", descripcion: "", region: "Region del Maule", comuna: "Valle del Sol", direccion: "", checklist: [], fotos: [] });
   const [message, setMessage] = useState("");
+  const [photoPreviews, setPhotoPreviews] = useState([]);
+  const photoInputRef = useRef(null);
+
+  const checklistItems = [
+    { value: "viento", label: "Hay viento fuerte en el sector" },
+    { value: "viviendas", label: "El fuego se acerca a viviendas" },
+    { value: "atrapados", label: "Hay personas atrapadas" },
+    { value: "material", label: "Hay material inflamable cercano" },
+    { value: "acceso", label: "El acceso al sector es dificil" },
+    { value: "humo", label: "El humo afecta la visibilidad en ruta" }
+  ];
+
+  function toggleChecklist(value) {
+    setForm((prev) => ({
+      ...prev,
+      checklist: prev.checklist.includes(value)
+        ? prev.checklist.filter((v) => v !== value)
+        : [...prev.checklist, value]
+    }));
+  }
+
+  function handlePhotos(event) {
+    const files = Array.from(event.target.files || []);
+    const readers = files.map((file) => new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    }));
+    Promise.all(readers).then((results) => {
+      setPhotoPreviews((prev) => [...prev, ...results]);
+      setForm((prev) => ({ ...prev, fotos: [...prev.fotos, ...results] }));
+    });
+  }
+
+  function removePhoto(index) {
+    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
+    setForm((prev) => ({ ...prev, fotos: prev.fotos.filter((_, i) => i !== index) }));
+  }
 
   async function loadData() {
     const [summary, usersData, reports, brigades, alertsData, riskZones, senapred, senapredEvents, bomberos, bomberosIncidents, evac] = await Promise.all([
@@ -173,7 +211,8 @@ export default function FuncionarioDashboard() {
       body: JSON.stringify(form)
     });
     if (!response.ok) { setMessage("Faltan datos obligatorios"); return; }
-    setForm({ sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260" });
+    setForm({ sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260", descripcion: "", region: "Region del Maule", comuna: "Valle del Sol", direccion: "", checklist: [], fotos: [] });
+    setPhotoPreviews([]);
     setMessage("Reporte registrado.");
     await loadData();
   }
@@ -207,9 +246,42 @@ export default function FuncionarioDashboard() {
         <Panel title="Registrar reporte" subtitle="Ingreso manual de focos">
           <form onSubmit={createReport} className="report-form">
             <label>Sector<input value={form.sector} onChange={(e) => setForm({ ...form, sector: e.target.value })} placeholder="Ej: Los Aromos" /></label>
-            <label>Tipo<select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}><option>Humo visible</option><option>Foco forestal</option><option>Quema no autorizada</option><option>Riesgo preventivo</option></select></label>
+            <label>Tipo<select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}><option>Humo visible</option><option>Foco forestal</option><option>Quema no autorizada</option><option>Quema agricola</option><option>Riesgo preventivo</option><option>Columna de humo</option><option>Foco cercano a viviendas</option></select></label>
             <label>Severidad<select value={form.severity} onChange={(e) => setForm({ ...form, severity: e.target.value })}><option>Baja</option><option>Media</option><option>Alta</option><option>Critica</option></select></label>
+            <label>Descripcion<textarea value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} rows={3} placeholder="Describe lo que observas..." /></label>
+            <div className="form-row">
+              <label>Region<select value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })}><option>Region del Maule</option><option>Region del Bio-Bio</option><option>Region de OHiggins</option><option>Region Metropolitana</option></select></label>
+              <label>Comuna<select value={form.comuna} onChange={(e) => setForm({ ...form, comuna: e.target.value })}><option>Valle del Sol</option><option>Talca</option><option>Curico</option><option>Linares</option><option>Constitucion</option></select></label>
+            </div>
+            <label>Direccion de referencia<input value={form.direccion} onChange={(e) => setForm({ ...form, direccion: e.target.value })} placeholder="Calle, numero, punto de referencia" /></label>
             <div className="form-row"><label>Lat<input value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} /></label><label>Lng<input value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} /></label></div>
+
+            <div className="field-group">
+              <p className="field-group-title">Checklist de condiciones</p>
+              {checklistItems.map((item) => (
+                <label key={item.value} className="check-item">
+                  <input type="checkbox" checked={form.checklist.includes(item.value)} onChange={() => toggleChecklist(item.value)} />
+                  {item.label}
+                </label>
+              ))}
+            </div>
+
+            <div className="photo-upload">
+              <p>Fotos del sector (opcional)</p>
+              <button type="button" className="btn-secondary" onClick={() => photoInputRef.current?.click()}>Agregar fotos</button>
+              <input ref={photoInputRef} type="file" accept="image/*" multiple onChange={handlePhotos} hidden />
+              {photoPreviews.length > 0 && (
+                <div className="photo-grid">
+                  {photoPreviews.map((src, i) => (
+                    <div key={i} className="photo-thumb">
+                      <img src={src} alt="" />
+                      <button type="button" className="photo-remove" onClick={() => removePhoto(i)}>&times;</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button type="submit">Registrar</button>
           </form>
         </Panel>

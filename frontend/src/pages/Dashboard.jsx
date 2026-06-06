@@ -9,5 +9,13 @@ export default function Dashboard() {
     return <VecinoDashboard />;
   }
 
+  if (user?.role === "VecinoBombero") {
+    return <VecinoDashboard hybridRole="bombero" />;
+  }
+
+  if (user?.role === "VecinoFuncionario") {
+    return <VecinoDashboard hybridRole="funcionario" />;
+  }
+
   return <FuncionarioDashboard />;
 }

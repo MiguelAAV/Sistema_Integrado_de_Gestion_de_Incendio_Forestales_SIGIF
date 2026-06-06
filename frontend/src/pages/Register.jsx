@@ -22,7 +22,8 @@ export default function Register() {
     email: "",
     genero: "",
     direccion: "",
-    fechaNacimiento: ""
+    fechaNacimiento: "",
+    tipoRol: ""
   });
 
   function handlePhoto(event) {
@@ -113,6 +114,7 @@ export default function Register() {
             <label>Fecha de nacimiento<input type="date" value={form.fechaNacimiento} onChange={(e) => update("fechaNacimiento", e.target.value)} /></label>
             <label>Correo electronico<input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="opcional" /></label>
             <label>Genero<select value={form.genero} onChange={(e) => update("genero", e.target.value)}><option value="">Seleccionar</option><option>Masculino</option><option>Femenino</option><option>Otro</option></select></label>
+            <label>Tipo de rol<select value={form.tipoRol} onChange={(e) => update("tipoRol", e.target.value)}><option value="">Vecino</option><option value="bombero">Vecino con funciones de Bombero</option><option value="funcionario">Vecino con funciones de Funcionario</option></select></label>
             <label>Contrasena *<input type="password" value={form.contrasena} onChange={(e) => update("contrasena", e.target.value)} required /></label>
           </div>
 

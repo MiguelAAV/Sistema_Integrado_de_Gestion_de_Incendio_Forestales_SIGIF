@@ -25,7 +25,7 @@ function PublicRoute({ children }) {
   return children;
 }
 
-function Layout({ children }) {
+function AppShell({ children }) {
   return (
     <>
       <Header />
@@ -40,12 +40,12 @@ function Layout({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<PublicRoute><Layout><Login /></Layout></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><Layout><Register /></Layout></PublicRoute>} />
-      <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
-      <Route path="/quienes-somos" element={<Layout><QuienesSomos /></Layout>} />
-      <Route path="/contacto" element={<Layout><Contacto /></Layout>} />
+      <Route path="/login" element={<PublicRoute><AppShell><Login /></AppShell></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><AppShell><Register /></AppShell></PublicRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><AppShell><Dashboard /></AppShell></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><AppShell><Profile /></AppShell></ProtectedRoute>} />
+      <Route path="/quienes-somos" element={<AppShell><QuienesSomos /></AppShell>} />
+      <Route path="/contacto" element={<AppShell><Contacto /></AppShell>} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

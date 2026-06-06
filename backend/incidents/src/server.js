@@ -23,7 +23,7 @@ app.use(express.json());
 app.get("/api/reports", (_req, res) => res.json(fireReports));
 
 app.post("/api/reports", (req, res) => {
-  const { sector, type, severity, lat, lng, reporterName } = req.body;
+  const { sector, type, severity, lat, lng, reporterName, descripcion, checklist, fotos, region, comuna, direccion } = req.body;
   if (!sector || !type || !severity)
     return res.status(400).json({ message: "sector, type y severity son obligatorios" });
 
@@ -34,7 +34,13 @@ app.post("/api/reports", (req, res) => {
     source: reporterName ? `Ciudadano: ${reporterName}` : "Ciudadano",
     reportedAt: new Date().toISOString(),
     lat: Number(lat) || -35.0, lng: Number(lng) || -71.26,
-    assignedBrigade: "Sin asignar"
+    assignedBrigade: "Sin asignar",
+    descripcion: descripcion || "",
+    checklist: checklist || [],
+    fotos: fotos || [],
+    region: region || "",
+    comuna: comuna || "",
+    direccion: direccion || ""
   };
 
   fireReports.unshift(newReport);
