@@ -54,3 +54,44 @@ export const firefighterIncidents = [
   { id: "BMB-102", unit: "Segunda Compania", sector: "Villa El Roble", status: "En terreno", etaMinutes: 0 },
   { id: "BMB-103", unit: "Unidad Aljibe", sector: "Cuesta Verde", status: "Solicitado", etaMinutes: 18 }
 ];
+
+export const mockCredentials = [
+  { email: "j.rivas@municipalidad.cl", password: "admin123", userId: 1, role: "Funcionario" },
+  { email: "c.cisternas@municipalidad.cl", password: "admin123", userId: 2, role: "Funcionario" },
+  { email: "p.castillo@municipalidad.cl", password: "admin123", userId: 3, role: "Funcionario" },
+  { email: "brigada.norte@municipalidad.cl", password: "brigada123", userId: 4, role: "Funcionario" },
+  { email: "brigada.sur@municipalidad.cl", password: "brigada123", userId: 5, role: "Funcionario" },
+  { email: "operador@municipalidad.cl", password: "operador123", userId: 8, role: "Funcionario" }
+];
+
+export const registeredVecinos = [
+  {
+    id: 101,
+    name: "Maria Lopez Diaz",
+    role: "Vecino",
+    area: "Comunidad",
+    nombre: "Maria",
+    apellidoPaterno: "Lopez",
+    apellidoMaterno: "Diaz",
+    rut: "22222222-2",
+    telefono: "987654321",
+    contrasena: "mimaria123",
+    direccion: "Calle Los Olivos 456",
+    fechaNacimiento: "1990-05-15",
+    fotoPerfil: "",
+    email: "maria.lopez@correo.cl",
+    genero: "Femenino",
+    lat: -35.01,
+    lng: -71.27,
+    acceptedTerms: true,
+    registeredAt: "2026-01-15T10:00:00.000Z"
+  }
+];
+
+export const evacuationPoints = [
+  { id: 1, name: "Gimnasio Municipal", capacity: 500, lat: -35.005, lng: -71.255, status: "Activo", resources: "Agua, frazadas, primeros auxilios" },
+  { id: 2, name: "Escuela Los Aromos", capacity: 300, lat: -34.988, lng: -71.238, status: "Activo", resources: "Agua, alimentos no perecibles" },
+  { id: 3, name: "Sede Vecinal El Roble", capacity: 150, lat: -35.042, lng: -71.288, status: "Activo", resources: "Agua, comunicaciones" },
+  { id: 4, name: "Cancha Cuesta Verde", capacity: 400, lat: -35.058, lng: -71.316, status: "Activo", resources: "Helipuerto temporal" },
+  { id: 5, name: "Iglesia San Jorge", capacity: 200, lat: -35.025, lng: -71.245, status: "En preparacion", resources: "Sin recursos asignados" }
+];
