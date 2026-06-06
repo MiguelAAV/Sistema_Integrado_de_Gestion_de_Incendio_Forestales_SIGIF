@@ -20,9 +20,102 @@ function CompactList({ items }) {
   return <ul className="compact-list">{items.map((item, i) => <li key={i}>{item}</li>)}</ul>;
 }
 
-function ApiCard({ data }) {
-  if (!data) return <p>Cargando...</p>;
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+function SenapredPanel({ status, events }) {
+  if (!status) return <p className="loading-text">Cargando SENAPRED...</p>;
+
+  const levelClass = status.regionalAlert === "Alerta Roja" ? "tag-danger" : status.regionalAlert === "Alerta Amarilla" ? "tag-warn" : "tag-info";
+
+  return (
+    <div className="mock-api-panel">
+      <div className="api-header">
+        <span className="api-provider">{status.provider}</span>
+        <span className={`tag ${levelClass}`}>{status.regionalAlert}</span>
+      </div>
+
+      <div className="api-body">
+        <div className="api-row">
+          <span className="api-label">Comuna</span>
+          <span className="api-value">{status.commune}</span>
+        </div>
+        <div className="api-row">
+          <span className="api-label">Riesgo climatico</span>
+          <span className="api-value">{status.weatherRisk}</span>
+        </div>
+        <div className="api-row">
+          <span className="api-label">Recomendacion</span>
+          <span className="api-value">{status.recommendation}</span>
+        </div>
+      </div>
+
+      {events && events.length > 0 && (
+        <>
+          <h4 className="api-subtitle">Eventos activos</h4>
+          <ul className="api-events">
+            {events.map((evt) => (
+              <li key={evt.id} className="api-event">
+                <span className="event-id">{evt.id}</span>
+                <span className={`tag ${evt.level === "Alerta Roja" ? "tag-danger" : evt.level === "Alerta Amarilla" ? "tag-warn" : "tag-info"}`}>
+                  {evt.level}
+                </span>
+                <span className="event-commune">{evt.commune}</span>
+                <span className="event-status">{evt.status}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+
+function BomberosPanel({ resources, incidents }) {
+  if (!resources) return <p className="loading-text">Cargando Bomberos...</p>;
+
+  return (
+    <div className="mock-api-panel">
+      <div className="api-header">
+        <span className="api-provider">{resources.provider}</span>
+        <span className="tag tag-info">Mock simulado</span>
+      </div>
+
+      <div className="api-stats">
+        <div className="api-stat">
+          <strong>{resources.availableUnits}</strong>
+          <span>Unidades</span>
+        </div>
+        <div className="api-stat">
+          <strong>{resources.waterTrucks}</strong>
+          <span>Carros aljibe</span>
+        </div>
+        <div className="api-stat">
+          <strong>{resources.volunteersOnDuty}</strong>
+          <span>Voluntarios</span>
+        </div>
+        <div className="api-stat">
+          <strong>{resources.radioChannel}</strong>
+          <span>Canal</span>
+        </div>
+      </div>
+
+      {incidents && incidents.length > 0 && (
+        <>
+          <h4 className="api-subtitle">Incidentes activos</h4>
+          <ul className="api-events">
+            {incidents.map((inc) => (
+              <li key={inc.id} className="api-event">
+                <span className="event-id">{inc.id}</span>
+                <span className="event-commune">{inc.sector}</span>
+                <span className={`tag ${inc.status === "En terreno" ? "tag-success" : inc.status === "Despachado" ? "tag-warn" : "tag-info"}`}>
+                  {inc.status}
+                </span>
+                <span className="event-status">ETA: {inc.etaMinutes} min</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
 }
 
 function Table({ rows, columns }) {
@@ -40,14 +133,15 @@ export default function FuncionarioDashboard() {
   const navigate = useNavigate();
 
   const [data, setData] = useState({
-    summary: null, users: [], reports: [], brigades: [], alerts: [], riskZones: [], senapred: null, bomberos: null
+    summary: null, users: [], reports: [], brigades: [], alerts: [], riskZones: [], 
+    senapred: null, senapredEvents: [], bomberos: null, bomberosIncidents: []
   });
   const [evacPoints, setEvacPoints] = useState([]);
   const [form, setForm] = useState({ sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260" });
   const [message, setMessage] = useState("");
 
   async function loadData() {
-    const [summary, usersData, reports, brigades, alertsData, riskZones, senapred, bomberos, evac] = await Promise.all([
+    const [summary, usersData, reports, brigades, alertsData, riskZones, senapred, senapredEvents, bomberos, bomberosIncidents, evac] = await Promise.all([
       fetchJson("/api/summary"),
       fetchJson("/api/users"),
       fetchJson("/api/reports"),
@@ -55,11 +149,13 @@ export default function FuncionarioDashboard() {
       fetchJson("/api/alerts"),
       fetchJson("/api/risk-zones"),
       fetchJson("/api/mock/senapred/status"),
+      fetchJson("/api/mock/senapred/events"),
       fetchJson("/api/mock/bomberos/resources"),
+      fetchJson("/api/mock/bomberos/incidents"),
       fetchJson("/api/evacuation-points")
     ]);
 
-    setData({ summary, users: usersData, reports, brigades, alerts: alertsData, riskZones, senapred, bomberos });
+    setData({ summary, users: usersData, reports, brigades, alerts: alertsData, riskZones, senapred, senapredEvents, bomberos, bomberosIncidents });
     setEvacPoints(evac);
   }
 
@@ -144,11 +240,11 @@ export default function FuncionarioDashboard() {
         <Panel title="Usuarios del sistema" subtitle="Roles y acceso">
           <CompactList items={data.users.map((u) => `${u.role}: ${u.name}`)} />
         </Panel>
-        <Panel title="SENAPRED mock" subtitle="Estado regional simulado">
-          <ApiCard data={data.senapred} />
+        <Panel title="SENAPRED" subtitle="Estado regional simulado">
+          <SenapredPanel status={data.senapred} events={data.senapredEvents?.events} />
         </Panel>
-        <Panel title="Bomberos mock" subtitle="Recursos simulados">
-          <ApiCard data={data.bomberos} />
+        <Panel title="Bomberos" subtitle="Recursos simulados">
+          <BomberosPanel resources={data.bomberos} incidents={data.bomberosIncidents?.incidents} />
         </Panel>
       </section>
 

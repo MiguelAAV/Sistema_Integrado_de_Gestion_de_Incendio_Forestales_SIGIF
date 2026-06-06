@@ -1160,6 +1160,148 @@ th {
   color: #889b8d;
 }
 
+.mock-api-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.api-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.api-provider {
+  font-weight: 800;
+  color: #1f4233;
+  font-size: 1rem;
+}
+
+.tag {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tag-danger {
+  background: #fde2dd;
+  color: #b9321a;
+}
+
+.tag-warn {
+  background: #fff0cf;
+  color: #8a5a00;
+}
+
+.tag-info {
+  background: #ddebf5;
+  color: #1a5a7a;
+}
+
+.tag-success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.api-body {
+  display: grid;
+  gap: 8px;
+}
+
+.api-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  font-size: 0.88rem;
+}
+
+.api-label {
+  color: #667467;
+  font-weight: 600;
+}
+
+.api-value {
+  color: #1f4233;
+  font-weight: 500;
+}
+
+.api-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.api-stat {
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f4f9f2;
+  text-align: center;
+}
+
+.api-stat strong {
+  color: #103d2c;
+  font-size: 1.4rem;
+}
+
+.api-stat span {
+  color: #667467;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.api-subtitle {
+  margin: 4px 0 0;
+  color: #405247;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.api-events {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.api-event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fbf6;
+  font-size: 0.83rem;
+}
+
+.event-id {
+  color: #667467;
+  font-weight: 700;
+  font-size: 0.75rem;
+  min-width: 64px;
+}
+
+.event-commune {
+  flex: 1;
+  color: #1f4233;
+  font-weight: 600;
+}
+
+.event-status {
+  color: #667467;
+  font-size: 0.8rem;
+}
+
+.loading-text {
+  color: #889b8d;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 900px) {
   main {
     padding: 16px;
