@@ -187,7 +187,7 @@ function App() {
           {/* ── TAB: RF-01 REPORTES ── */}
           {activeTab === "reportes" && (
             <div className="grid two-columns">
-              <Panel title="🔥 RF-01 — Reporte ciudadano" subtitle="Canal formal con geolocalización mock">
+              <Panel title="🔥 Reporte ciudadano" subtitle="Canal formal con geolocalización mock">
                 <form onSubmit={createReport} className="report-form">
                   <label>Sector
                     <input value={reportForm.sector} onChange={(e) => setReportForm({ ...reportForm, sector: e.target.value })} placeholder="Ej: Los Aromos" />
@@ -224,7 +224,7 @@ function App() {
           {/* ── TAB: RF-02 MAPA ── */}
           {activeTab === "mapa" && (
             <div className="grid two-columns">
-              <Panel title="🗺 RF-02 — Mapa GIS simplificado" subtitle="Focos activos, brigadas y zonas de riesgo (mock)">
+              <Panel title="🗺 Mapa GIS simplificado" subtitle="Focos activos, brigadas y zonas de riesgo (mock)">
                 <div className="map-box">
                   {data.reports.filter((r) => r.status === "Activo").slice(0, 8).map((r) => (
                     <MapPoint key={r.id} item={r} type="fire" />
@@ -267,7 +267,7 @@ function App() {
           {/* ── TAB: RF-03 ALERTAS ── */}
           {activeTab === "alertas" && (
             <div className="grid two-columns">
-              <Panel title="🚨 RF-03 — Emitir alerta masiva" subtitle="Notificación a la comunidad por Web, SMS o App">
+              <Panel title="🚨 Emitir alerta masiva" subtitle="Notificación a la comunidad por Web, SMS o App">
                 <form onSubmit={emitAlert} className="report-form">
                   <label>Título de la alerta
                     <input value={alertForm.title} onChange={(e) => setAlertForm({ ...alertForm, title: e.target.value })} placeholder="Ej: Alerta roja sector norte" />
@@ -297,7 +297,7 @@ function App() {
 
           {/* ── TAB: RF-05 COORDINACIÓN ── */}
           {activeTab === "coord" && (
-            <Panel title="🚒 RF-05 — Coordinación de brigadas" subtitle="Asignar brigada y actualizar estado de cada reporte activo">
+            <Panel title="🚒 Coordinación de brigadas" subtitle="Asignar brigada y actualizar estado de cada reporte activo">
               <CoordTable reports={data.reports} brigades={brigadeNames} onUpdate={updateReport} />
             </Panel>
           )}
@@ -305,10 +305,10 @@ function App() {
           {/* ── TAB: RF-04 APIS ── */}
           {activeTab === "apis" && (
             <div className="grid two-columns">
-              <Panel title="🏛 RF-04 — API SENAPRED mock" subtitle="Estado regional y nivel de alerta simulado">
+              <Panel title="🏛 API SENAPRED mock" subtitle="Estado regional y nivel de alerta simulado">
                 <ApiCard data={data.senapred} />
               </Panel>
-              <Panel title="🚒 RF-04 — API Bomberos mock" subtitle="Recursos operativos disponibles simulados">
+              <Panel title="🚒 API Bomberos mock" subtitle="Recursos operativos disponibles simulados">
                 <ApiCard data={data.bomberos} />
               </Panel>
             </div>
