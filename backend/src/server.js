@@ -1,5 +1,7 @@
 import cors from "cors";
 import express from "express";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import {
   alerts,
   brigades,
@@ -139,4 +141,9 @@ app.get("/api/mock/bomberos/resources", (_req, res) => res.json({
   radioChannel:     "VDS-B1"
 }));
 
-app.listen(port, () => console.log(`SIGIF backend running at http://localhost:${port}`));
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const distPath = join(__dirname, "../../frontend/dist");
+app.use(express.static(distPath));
+app.get("*", (_req, res) => res.sendFile(join(distPath, "index.html")));
+
+app.listen(port, () => console.log(`SIGIF running at http://localhost:${port}`));
