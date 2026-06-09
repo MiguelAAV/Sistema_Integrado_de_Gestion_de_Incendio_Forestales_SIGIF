@@ -110,12 +110,12 @@ function App() {
       </div>
 
       <main>
-        {/* ── HERO ── */}
+        {/* ── HERO — replica portada Parcial 1 ── */}
         <section className="hero">
-          <div>
-            <p className="eyebrow">GPY1101 · Evaluación de Proyectos de Software</p>
+          <div className="hero-content">
+            <p className="eyebrow">GPY1101 · Evaluación de Proyectos de Software · Municipalidad Valle del Sol</p>
             <h1><span className="green">SIG</span><span className="fire">IF</span></h1>
-            <p>Sistema Integrado de Gestión de Incendios Forestales — detecta focos, coordina brigadas, emite alertas y consulta integraciones mock de Bomberos y SENAPRED.</p>
+            <p>Sistema Integrado de Gestión de Incendios Forestales — detecta focos, coordina brigadas, emite alertas y consulta integraciones de Bomberos y SENAPRED.</p>
           </div>
           <div className="hero-kpi">
             <span className="kpi-label">Objetivo detección</span>
@@ -134,17 +134,18 @@ function App() {
           <Metric label="Alertas emitidas"    value={data.summary?.alertsSent ?? "—"}       color="navy"   />
         </div>
 
-        {/* ── TABS ── */}
+        {/* ── TABS — estilo pasos de la presentación ── */}
         <div className="tabs">
           {[
-            { id: "dashboard", label: "📊 Dashboard" },
-            { id: "reportes",  label: "🔥 RF-01 Reportes" },
-            { id: "mapa",      label: "🗺 RF-02 Mapa GIS" },
-            { id: "alertas",   label: "🚨 RF-03 Alertas" },
-            { id: "coord",     label: "🚒 RF-05 Coordinación" },
-            { id: "apis",      label: "🔗 RF-04 Integraciones" },
+            { id: "dashboard", num: "01", label: "Dashboard" },
+            { id: "reportes",  num: "02", label: "RF-01 Reporte" },
+            { id: "mapa",      num: "03", label: "RF-02 Mapa GIS" },
+            { id: "alertas",   num: "04", label: "RF-03 Alertas" },
+            { id: "coord",     num: "05", label: "RF-05 Coordinación" },
+            { id: "apis",      num: "06", label: "RF-04 Integración" },
           ].map((t) => (
             <button key={t.id} className={`tab-btn${activeTab === t.id ? " active" : ""}`} onClick={() => setActiveTab(t.id)}>
+              <span className="tab-step">{t.num}</span>
               {t.label}
             </button>
           ))}

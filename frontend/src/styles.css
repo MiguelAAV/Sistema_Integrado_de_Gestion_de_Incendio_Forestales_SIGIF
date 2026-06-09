@@ -24,9 +24,11 @@
   --navy-mid:     #1A3550;
   --navy-light:   #274463;
 
+  --cyan-accent:  #00B4D8;
+
   --surface:      #FFFFFF;
-  --surface-alt:  #F4F9EF;
-  --border:       #C8DFBA;
+  --surface-alt:  #F0F4F8;
+  --border:       #CBD5E1;
   --text-main:    #0D1B2A;
   --text-muted:   #4A6741;
 
@@ -72,30 +74,52 @@ main {
   50%       { opacity: .5; transform: scale(1.35); }
 }
 
-/* ── Hero ─────────────────────────────────────────────────────────── */
+/* ── Hero — replica portada Parcial 1 ────────────────────────────── */
 .hero {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 28px;
-  align-items: center;
-  padding: 44px 40px;
-  background:
-    linear-gradient(135deg,
-      var(--navy-deep) 0%,
-      var(--green-dark) 50%,
-      #4a1200 100%);
+  gap: 0;
+  align-items: stretch;
+  background: var(--navy-deep);
   color: #fff;
   position: relative;
   overflow: hidden;
+  min-height: 220px;
 }
 
-/* flame texture overlay */
-.hero::after {
+/* Bloques decorativos alternados #274E13 / #1A3550 — replica portada */
+.hero::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 80% 60%, rgba(230,51,0,.18) 0 25%, transparent 70%);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--green-dark)  0px  120px,
+      var(--navy-mid)    120px 240px,
+      var(--green-dark)  240px 360px,
+      var(--navy-mid)    360px 480px
+    );
+  opacity: 0.28;
   pointer-events: none;
+}
+
+/* Acento cyan diagonal — elemento visual de la presentación */
+.hero::after {
+  content: "";
+  position: absolute;
+  top: -40px; right: 260px;
+  width: 4px; height: 130%;
+  background: var(--cyan-accent);
+  transform: rotate(12deg);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.hero-content {
+  padding: 40px 40px 36px;
+  position: relative;
+  z-index: 1;
 }
 
 .eyebrow {
@@ -127,22 +151,21 @@ h1 span.green { color: var(--green-pale); }
   line-height: 1.6;
 }
 
-/* KPI box inside hero */
+/* KPI box inside hero — bloque #1A3550 como en portada */
 .hero-kpi {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-width: 170px;
-  padding: 28px 24px;
-  border-radius: 20px;
-  border: 2px solid rgba(249,199,79,.4);
-  background: rgba(13,27,42,.55);
-  backdrop-filter: blur(8px);
+  min-width: 200px;
+  padding: 36px 28px;
+  background: var(--navy-mid);
+  border-left: 4px solid var(--cyan-accent);
   text-align: center;
   position: relative;
   z-index: 1;
+  flex-shrink: 0;
 }
 
 .hero-kpi .kpi-label { color: var(--yellow-main); font-size: 0.78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
@@ -380,23 +403,59 @@ tr.sev-alta    td:first-child { border-left: 3px solid var(--yellow-bright); }
 .message-ok   { border-left-color: var(--green-light); background: #e8f5e0; color: var(--green-dark); }
 .message-warn { border-left-color: var(--yellow-bright); background: var(--yellow-pale); color: #5a3e00; }
 
-/* ── Tabs ────────────────────────────────────────────────────────── */
-.tabs { display: flex; flex-wrap: wrap; gap: 8px; padding: 20px 32px 0; }
+/* ── Tabs — estilo barra de pasos de la presentación ─────────────── */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: var(--navy-mid);
+  border-bottom: 3px solid var(--green-dark);
+}
 
 .tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: auto;
-  padding: 9px 16px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 0.85rem;
+  padding: 13px 20px;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,.08);
+  background: transparent;
+  color: #8eaec4;
+  font-size: 0.82rem;
   font-weight: 700;
+  letter-spacing: .04em;
   cursor: pointer;
+  text-transform: uppercase;
   transition: all .15s;
+  position: relative;
 }
-.tab-btn:hover  { border-color: var(--green-light); color: var(--green-dark); }
-.tab-btn.active { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+.tab-btn:hover  { background: rgba(255,255,255,.07); color: #fff; }
+.tab-btn.active {
+  background: var(--green-dark);
+  color: #fff;
+}
+/* Acento inferior en tab activo */
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -3px; left: 0; right: 0;
+  height: 3px;
+  background: var(--cyan-accent);
+}
+.tab-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  color: var(--yellow-main);
+  font-size: 0.72rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.tab-btn.active .tab-step { background: var(--cyan-accent); color: var(--navy-deep); }
 
 /* ── StatBar ─────────────────────────────────────────────────────── */
 .stat-bar-row { margin-bottom: 12px; }
