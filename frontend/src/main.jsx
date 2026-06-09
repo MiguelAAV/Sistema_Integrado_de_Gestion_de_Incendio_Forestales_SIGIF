@@ -113,7 +113,7 @@ function App() {
         {/* ── HERO — replica portada Parcial 1 ── */}
         <section className="hero">
           <div className="hero-content">
-            <p className="eyebrow">GPY1101 · Evaluación de Proyectos de Software · Municipalidad Valle del Sol</p>
+            <p className="eyebrow">Municipalidad Valle del Sol</p>
             <h1><span className="green">SIG</span><span className="fire">IF</span></h1>
             <p>Sistema Integrado de Gestión de Incendios Forestales — detecta focos, coordina brigadas, emite alertas y consulta integraciones de Bomberos y SENAPRED.</p>
           </div>
@@ -138,11 +138,11 @@ function App() {
         <div className="tabs">
           {[
             { id: "dashboard", num: "01", label: "Dashboard" },
-            { id: "reportes",  num: "02", label: "RF-01 Reporte" },
-            { id: "mapa",      num: "03", label: "RF-02 Mapa GIS" },
-            { id: "alertas",   num: "04", label: "RF-03 Alertas" },
-            { id: "coord",     num: "05", label: "RF-05 Coordinación" },
-            { id: "apis",      num: "06", label: "RF-04 Integración" },
+            { id: "reportes",  num: "02", label: "Reporte" },
+            { id: "mapa",      num: "03", label: "Mapa GIS" },
+            { id: "alertas",   num: "04", label: "Alertas" },
+            { id: "coord",     num: "05", label: "Coordinación" },
+            { id: "apis",      num: "06", label: "Integración" },
           ].map((t) => (
             <button key={t.id} className={`tab-btn${activeTab === t.id ? " active" : ""}`} onClick={() => setActiveTab(t.id)}>
               <span className="tab-step">{t.num}</span>
