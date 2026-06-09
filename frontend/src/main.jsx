@@ -4,51 +4,103 @@ import "./styles.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
+// ── Data fetching ─────────────────────────────────────────────────────
+async function fetchJson(path) {
+  const res = await fetch(`${API_URL}${path}`);
+  return res.json();
+}
+
+async function patchJson(path, body) {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  return res;
+}
+
+async function postJson(path, body) {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  return res;
+}
+
+// ── App ───────────────────────────────────────────────────────────────
 function App() {
   const [data, setData] = useState({
-    summary: null,
-    users: [],
-    reports: [],
-    brigades: [],
-    alerts: [],
-    riskZones: [],
-    senapred: null,
-    bomberos: null
+    summary: null, users: [], reports: [], brigades: [],
+    alerts: [], riskZones: [], senapred: null, bomberos: null, stats: null
   });
-  const [form, setForm] = useState({ sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260" });
-  const [message, setMessage] = useState("");
+  const [reportForm, setReportForm] = useState({
+    sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260"
+  });
+  const [alertForm, setAlertForm] = useState({
+    title: "", sector: "", severity: "Alta", channel: "Web/SMS"
+  });
+  const [message, setMessage] = useState({ text: "", type: "info" });
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   async function loadData() {
-    const [summary, users, reports, brigades, alerts, riskZones, senapred, bomberos] = await Promise.all([
-      fetchJson("/api/summary"),
-      fetchJson("/api/users"),
-      fetchJson("/api/reports"),
-      fetchJson("/api/brigades"),
-      fetchJson("/api/alerts"),
-      fetchJson("/api/risk-zones"),
-      fetchJson("/api/mock/senapred/status"),
-      fetchJson("/api/mock/bomberos/resources")
-    ]);
-    setData({ summary, users, reports, brigades, alerts, riskZones, senapred, bomberos });
+    const [summary, users, reports, brigades, alerts, riskZones, senapred, bomberos, stats] =
+      await Promise.all([
+        fetchJson("/api/summary"),
+        fetchJson("/api/users"),
+        fetchJson("/api/reports"),
+        fetchJson("/api/brigades"),
+        fetchJson("/api/alerts"),
+        fetchJson("/api/risk-zones"),
+        fetchJson("/api/mock/senapred/status"),
+        fetchJson("/api/mock/bomberos/resources"),
+        fetchJson("/api/stats"),
+      ]);
+    setData({ summary, users, reports, brigades, alerts, riskZones, senapred, bomberos, stats });
   }
 
   useEffect(() => {
-    loadData().catch(() => setMessage("No se pudo conectar al backend local. Revisa que esté activo en el puerto 4000."));
+    loadData().catch(() =>
+      setMessage({ text: "No se pudo conectar al backend local. Revisa que esté activo en el puerto 4000.", type: "warn" })
+    );
   }, []);
 
-  async function createReport(event) {
-    event.preventDefault();
-    setMessage("");
-    const response = await fetch(`${API_URL}/api/reports`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form)
-    });
-    if (!response.ok) { setMessage("Faltan datos obligatorios para crear el reporte."); return; }
-    setForm({ sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260" });
-    setMessage("✔ Reporte ciudadano registrado correctamente.");
+  function notify(text, type = "ok") {
+    setMessage({ text, type });
+    setTimeout(() => setMessage({ text: "", type: "info" }), 4000);
+  }
+
+  // RF-01 — Crear reporte ciudadano
+  async function createReport(e) {
+    e.preventDefault();
+    const res = await postJson("/api/reports", reportForm);
+    if (!res.ok) { notify("Faltan datos obligatorios para crear el reporte.", "warn"); return; }
+    setReportForm({ sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260" });
+    notify("✔ Reporte ciudadano registrado correctamente.");
     await loadData();
   }
+
+  // RF-03 — Emitir alerta masiva
+  async function emitAlert(e) {
+    e.preventDefault();
+    const res = await postJson("/api/alerts", alertForm);
+    if (!res.ok) { notify("Faltan datos para emitir la alerta.", "warn"); return; }
+    const created = await res.json();
+    setAlertForm({ title: "", sector: "", severity: "Alta", channel: "Web/SMS" });
+    notify(`🚨 Alerta emitida — ${created.recipients} destinatarios notificados.`);
+    await loadData();
+  }
+
+  // RF-05 — Actualizar estado / asignar brigada
+  async function updateReport(id, field, value) {
+    const body = { [field]: value };
+    const res = await patchJson(`/api/reports/${id}`, body);
+    if (!res.ok) { notify("Error al actualizar el reporte.", "warn"); return; }
+    notify("✔ Reporte actualizado.");
+    await loadData();
+  }
+
+  const brigadeNames = data.brigades.map((b) => b.name);
 
   return (
     <>
@@ -62,10 +114,8 @@ function App() {
         <section className="hero">
           <div>
             <p className="eyebrow">GPY1101 · Evaluación de Proyectos de Software</p>
-            <h1>
-              <span className="green">SIG</span><span className="fire">IF</span>
-            </h1>
-            <p>Sistema Integrado de Gestión de Incendios Forestales — detecta focos, coordina brigadas, emite alertas y consulta integraciones mock de Bomberos y SENAPRED en tiempo real.</p>
+            <h1><span className="green">SIG</span><span className="fire">IF</span></h1>
+            <p>Sistema Integrado de Gestión de Incendios Forestales — detecta focos, coordina brigadas, emite alertas y consulta integraciones mock de Bomberos y SENAPRED.</p>
           </div>
           <div className="hero-kpi">
             <span className="kpi-label">Objetivo detección</span>
@@ -74,7 +124,7 @@ function App() {
           </div>
         </section>
 
-        {message && <div className="message">{message}</div>}
+        {message.text && <div className={`message message-${message.type}`}>{message.text}</div>}
 
         {/* ── MÉTRICAS ── */}
         <div className="metrics">
@@ -84,115 +134,192 @@ function App() {
           <Metric label="Alertas emitidas"    value={data.summary?.alertsSent ?? "—"}       color="navy"   />
         </div>
 
-        {/* ── REPORTE + MAPA ── */}
+        {/* ── TABS ── */}
+        <div className="tabs">
+          {[
+            { id: "dashboard", label: "📊 Dashboard" },
+            { id: "reportes",  label: "🔥 RF-01 Reportes" },
+            { id: "mapa",      label: "🗺 RF-02 Mapa GIS" },
+            { id: "alertas",   label: "🚨 RF-03 Alertas" },
+            { id: "coord",     label: "🚒 RF-05 Coordinación" },
+            { id: "apis",      label: "🔗 RF-04 Integraciones" },
+          ].map((t) => (
+            <button key={t.id} className={`tab-btn${activeTab === t.id ? " active" : ""}`} onClick={() => setActiveTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         <div className="section-wrap">
-          <div className="section-title">Reporte y monitoreo</div>
-          <div className="grid two-columns">
-            <Panel title="🔥 Reporte ciudadano" subtitle="RF-01 — canal formal con geolocalización mock">
-              <form onSubmit={createReport} className="report-form">
-                <label>Sector
-                  <input value={form.sector} onChange={(e) => setForm({ ...form, sector: e.target.value })} placeholder="Ej: Los Aromos" />
-                </label>
-                <label>Tipo de incidente
-                  <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                    <option>Humo visible</option>
-                    <option>Foco forestal</option>
-                    <option>Quema no autorizada</option>
-                    <option>Riesgo preventivo</option>
-                  </select>
-                </label>
-                <label>Severidad
-                  <select value={form.severity} onChange={(e) => setForm({ ...form, severity: e.target.value })}>
-                    <option>Baja</option>
-                    <option>Media</option>
-                    <option>Alta</option>
-                    <option>Critica</option>
-                  </select>
-                </label>
-                <label>Nombre reportante (opcional)
-                  <input value={form.reporterName} onChange={(e) => setForm({ ...form, reporterName: e.target.value })} placeholder="Nombre o anónimo" />
-                </label>
-                <div className="form-row">
-                  <label>Latitud  <input value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} /></label>
-                  <label>Longitud <input value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} /></label>
+
+          {/* ── TAB: DASHBOARD ── */}
+          {activeTab === "dashboard" && (
+            <>
+              <div className="grid three-columns">
+                <Panel title="📊 Reportes por severidad" subtitle="Distribución actual">
+                  {data.stats?.bySeverity?.map((item) => (
+                    <StatBar key={item.severity} label={item.severity} count={item.count}
+                      total={data.reports.length} colorClass={`sev-bar-${item.severity.toLowerCase()}`} />
+                  ))}
+                </Panel>
+                <Panel title="📋 Reportes por estado" subtitle="Estado operacional">
+                  {data.stats?.byStatus?.map((item) => (
+                    <StatBar key={item.status} label={item.status} count={item.count}
+                      total={data.reports.length} colorClass="sev-bar-media" />
+                  ))}
+                </Panel>
+                <Panel title="🌲 Zonas de riesgo" subtitle="Base para planificación preventiva">
+                  <CompactList items={data.riskZones.map((z) => `${z.risk} — ${z.name}: ${z.reason}`)} />
+                </Panel>
+              </div>
+              <div className="grid two-columns">
+                <Panel title="👥 Actores del sistema" subtitle="Usuarios que operarán SIGIF">
+                  <CompactList items={data.users.map((u) => `${u.role}: ${u.name} — ${u.access}`)} />
+                </Panel>
+                <Panel title="🏛 Estado SENAPRED" subtitle="RF-04 — alerta regional">
+                  <ApiCard data={data.senapred} />
+                </Panel>
+              </div>
+            </>
+          )}
+
+          {/* ── TAB: RF-01 REPORTES ── */}
+          {activeTab === "reportes" && (
+            <div className="grid two-columns">
+              <Panel title="🔥 RF-01 — Reporte ciudadano" subtitle="Canal formal con geolocalización mock">
+                <form onSubmit={createReport} className="report-form">
+                  <label>Sector
+                    <input value={reportForm.sector} onChange={(e) => setReportForm({ ...reportForm, sector: e.target.value })} placeholder="Ej: Los Aromos" />
+                  </label>
+                  <label>Tipo de incidente
+                    <select value={reportForm.type} onChange={(e) => setReportForm({ ...reportForm, type: e.target.value })}>
+                      <option>Humo visible</option>
+                      <option>Foco forestal</option>
+                      <option>Quema no autorizada</option>
+                      <option>Riesgo preventivo</option>
+                    </select>
+                  </label>
+                  <label>Severidad
+                    <select value={reportForm.severity} onChange={(e) => setReportForm({ ...reportForm, severity: e.target.value })}>
+                      <option>Baja</option><option>Media</option><option>Alta</option><option>Critica</option>
+                    </select>
+                  </label>
+                  <label>Nombre reportante (opcional)
+                    <input value={reportForm.reporterName} onChange={(e) => setReportForm({ ...reportForm, reporterName: e.target.value })} placeholder="Nombre o anónimo" />
+                  </label>
+                  <div className="form-row">
+                    <label>Latitud  <input value={reportForm.lat} onChange={(e) => setReportForm({ ...reportForm, lat: e.target.value })} /></label>
+                    <label>Longitud <input value={reportForm.lng} onChange={(e) => setReportForm({ ...reportForm, lng: e.target.value })} /></label>
+                  </div>
+                  <button type="submit">Registrar reporte</button>
+                </form>
+              </Panel>
+              <Panel title="📋 Reportes registrados" subtitle="Todos los reportes en memoria">
+                <ReportsTable reports={data.reports} brigades={brigadeNames} onUpdate={updateReport} />
+              </Panel>
+            </div>
+          )}
+
+          {/* ── TAB: RF-02 MAPA ── */}
+          {activeTab === "mapa" && (
+            <div className="grid two-columns">
+              <Panel title="🗺 RF-02 — Mapa GIS simplificado" subtitle="Focos activos, brigadas y zonas de riesgo (mock)">
+                <div className="map-box">
+                  {data.reports.filter((r) => r.status === "Activo").slice(0, 8).map((r) => (
+                    <MapPoint key={r.id} item={r} type="fire" />
+                  ))}
+                  {data.brigades.map((b) => <MapPoint key={b.id} item={b} type="brigade" />)}
+                  {data.riskZones.map((z) => <MapPoint key={z.id} item={z} type="risk" />)}
                 </div>
-                <button type="submit">Registrar reporte</button>
-              </form>
-            </Panel>
+                <div className="legend">
+                  <span className="dot fire" /> Foco activo
+                  <span className="dot brigade" /> Brigada/Bomberos
+                  <span className="dot risk" /> Zona de riesgo
+                </div>
+              </Panel>
+              <Panel title="🚒 Estado de brigadas" subtitle="Posición y tarea actual">
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      {["Brigada", "Estado", "Tarea actual", "Efectivos"].map((h) => (
+                        <th key={h} style={{ padding: "9px 10px", background: "var(--green-dark)", color: "#fff", fontSize: ".8rem", textAlign: "left" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.brigades.map((b) => (
+                      <tr key={b.id}>
+                        <td style={{ padding: "9px 10px", borderBottom: "1px solid var(--border)", fontSize: ".87rem" }}>{b.name}</td>
+                        <td style={{ padding: "9px 10px", borderBottom: "1px solid var(--border)" }}>
+                          <span className={`badge badge-${b.status === "Disponible" ? "media" : b.status === "En combate" ? "critica" : "alta"}`}>{b.status}</span>
+                        </td>
+                        <td style={{ padding: "9px 10px", borderBottom: "1px solid var(--border)", fontSize: ".87rem" }}>{b.currentTask}</td>
+                        <td style={{ padding: "9px 10px", borderBottom: "1px solid var(--border)", fontSize: ".87rem" }}>{b.members}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Panel>
+            </div>
+          )}
 
-            <Panel title="🗺 Mapa GIS simplificado" subtitle="RF-02 — focos, brigadas y zonas de riesgo (mock)">
-              <div className="map-box">
-                {data.reports.slice(0, 7).map((r) => <MapPoint key={r.id} item={r} type="fire" />)}
-                {data.brigades.map((b) => <MapPoint key={b.id} item={b} type="brigade" />)}
-              </div>
-              <div className="legend">
-                <span className="dot fire" /> Foco de incendio
-                <span className="dot brigade" /> Brigada / Bomberos
-              </div>
-            </Panel>
-          </div>
-        </div>
+          {/* ── TAB: RF-03 ALERTAS ── */}
+          {activeTab === "alertas" && (
+            <div className="grid two-columns">
+              <Panel title="🚨 RF-03 — Emitir alerta masiva" subtitle="Notificación a la comunidad por Web, SMS o App">
+                <form onSubmit={emitAlert} className="report-form">
+                  <label>Título de la alerta
+                    <input value={alertForm.title} onChange={(e) => setAlertForm({ ...alertForm, title: e.target.value })} placeholder="Ej: Alerta roja sector norte" />
+                  </label>
+                  <label>Sector afectado
+                    <input value={alertForm.sector} onChange={(e) => setAlertForm({ ...alertForm, sector: e.target.value })} placeholder="Ej: Pinar Alto" />
+                  </label>
+                  <label>Severidad
+                    <select value={alertForm.severity} onChange={(e) => setAlertForm({ ...alertForm, severity: e.target.value })}>
+                      <option>Media</option><option>Alta</option><option>Critica</option>
+                    </select>
+                  </label>
+                  <label>Canal de notificación
+                    <select value={alertForm.channel} onChange={(e) => setAlertForm({ ...alertForm, channel: e.target.value })}>
+                      <option>Web/SMS</option><option>Web</option><option>App</option><option>SMS</option>
+                    </select>
+                  </label>
+                  <button type="submit" style={{ background: "var(--red-deep)" }}>🚨 Emitir alerta masiva</button>
+                </form>
+                <p className="rf-note">Los destinatarios se estiman automáticamente según severidad: Crítica → 1.200, Alta → 500, Media → 150.</p>
+              </Panel>
+              <Panel title="📢 Alertas emitidas" subtitle="Historial de notificaciones masivas">
+                <AlertList alerts={data.alerts} />
+              </Panel>
+            </div>
+          )}
 
-        {/* ── INTEGRACIONES ── */}
-        <div className="section-wrap">
-          <div className="section-title">Integraciones externas (mock)</div>
-          <div className="grid three-columns">
-            <Panel title="👥 Usuarios del MVP" subtitle="Actores del sistema web">
-              <CompactList items={data.users.map((u) => `${u.role}: ${u.name}`)} />
+          {/* ── TAB: RF-05 COORDINACIÓN ── */}
+          {activeTab === "coord" && (
+            <Panel title="🚒 RF-05 — Coordinación de brigadas" subtitle="Asignar brigada y actualizar estado de cada reporte activo">
+              <CoordTable reports={data.reports} brigades={brigadeNames} onUpdate={updateReport} />
             </Panel>
-            <Panel title="🏛 API SENAPRED" subtitle="RF-04 — estado regional simulado">
-              <ApiCard data={data.senapred} />
-            </Panel>
-            <Panel title="🚒 API Bomberos" subtitle="RF-04 — recursos operativos simulados">
-              <ApiCard data={data.bomberos} />
-            </Panel>
-          </div>
-        </div>
+          )}
 
-        {/* ── REPORTES + ALERTAS ── */}
-        <div className="section-wrap">
-          <div className="section-title">Gestión operacional</div>
-          <div className="grid two-columns">
-            <Panel title="📋 Reportes recientes" subtitle="10 datos mock + reportes creados en sesión">
-              <Table rows={data.reports} columns={["sector", "type", "severity", "status", "assignedBrigade"]} />
-            </Panel>
-            <Panel title="⚠ Alertas y brigadas" subtitle="RF-03 y RF-05 — coordinación operativa">
-              <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--green-dark)", fontSize: ".85rem" }}>Alertas activas</p>
-              <CompactList items={data.alerts.map((a) => `${a.severity} — ${a.title} (${a.sector})`)} />
-              <p style={{ margin: "14px 0 8px", fontWeight: 700, color: "var(--green-dark)", fontSize: ".85rem" }}>Brigadas</p>
-              <CompactList items={data.brigades.map((b) => `${b.name}: ${b.status} — ${b.currentTask}`)} />
-            </Panel>
-          </div>
-        </div>
+          {/* ── TAB: RF-04 APIS ── */}
+          {activeTab === "apis" && (
+            <div className="grid two-columns">
+              <Panel title="🏛 RF-04 — API SENAPRED mock" subtitle="Estado regional y nivel de alerta simulado">
+                <ApiCard data={data.senapred} />
+              </Panel>
+              <Panel title="🚒 RF-04 — API Bomberos mock" subtitle="Recursos operativos disponibles simulados">
+                <ApiCard data={data.bomberos} />
+              </Panel>
+            </div>
+          )}
 
-        {/* ── ZONAS DE RIESGO + ALCANCE MVP ── */}
-        <div className="section-wrap">
-          <div className="section-title">Análisis y alcance</div>
-          <div className="grid two-columns">
-            <Panel title="🌲 Zonas de riesgo" subtitle="Base para análisis histórico y planificación">
-              <CompactList items={data.riskZones.map((z) => `${z.risk} — ${z.name}: ${z.reason}`)} />
-            </Panel>
-            <Panel title="📌 Límites del MVP" subtitle="Alcance inicial — demostración de viabilidad técnica">
-              <CompactList items={[
-                "Sin despliegue productivo",
-                "Sin base de datos: datos mock en memoria",
-                "Sin autenticación real: roles visibles para prototipo",
-                "APIs externas simuladas en backend local",
-                "Pensado para validar flujo web antes de app móvil"
-              ]} />
-            </Panel>
-          </div>
         </div>
       </main>
     </>
   );
 }
 
-async function fetchJson(path) {
-  const response = await fetch(`${API_URL}${path}`);
-  return response.json();
-}
-
+// ── Metric ────────────────────────────────────────────────────────────
 function Metric({ label, value, color }) {
   return (
     <article className={`metric ${color}`}>
@@ -202,18 +329,17 @@ function Metric({ label, value, color }) {
   );
 }
 
+// ── Panel ─────────────────────────────────────────────────────────────
 function Panel({ title, subtitle, children }) {
   return (
     <article className="panel">
-      <div className="panel-header">
-        <h2>{title}</h2>
-        <p>{subtitle}</p>
-      </div>
+      <div className="panel-header"><h2>{title}</h2><p>{subtitle}</p></div>
       <div className="panel-body">{children}</div>
     </article>
   );
 }
 
+// ── CompactList ───────────────────────────────────────────────────────
 function CompactList({ items }) {
   return (
     <ul className="compact-list">
@@ -222,32 +348,65 @@ function CompactList({ items }) {
   );
 }
 
-function ApiCard({ data }) {
-  if (!data) return <p style={{ color: "var(--text-muted)" }}>Cargando...</p>;
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+// ── StatBar ───────────────────────────────────────────────────────────
+function StatBar({ label, count, total, colorClass }) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  return (
+    <div className="stat-bar-row">
+      <div className="stat-bar-label"><span>{label}</span><strong>{count}</strong></div>
+      <div className="stat-bar-track">
+        <div className={`stat-bar-fill ${colorClass}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
 }
 
-function Table({ rows, columns }) {
-  const sevClass = (sev) => {
-    if (!sev) return "";
-    const s = sev.toLowerCase();
-    if (s === "critica") return "sev-critica";
-    if (s === "alta") return "sev-alta";
-    return "";
-  };
-  const badge = (val, col) => {
-    if (col !== "severity") return val;
-    const cls = { critica: "badge-critica", alta: "badge-alta", media: "badge-media", baja: "badge-baja" }[val?.toLowerCase()] || "";
-    return <span className={`badge ${cls}`}>{val}</span>;
-  };
+// ── AlertList ─────────────────────────────────────────────────────────
+function AlertList({ alerts }) {
+  if (!alerts.length) return <p style={{ color: "var(--text-muted)" }}>Sin alertas emitidas.</p>;
+  return (
+    <ul className="compact-list">
+      {alerts.map((a) => (
+        <li key={a.id} className={`alert-item sev-${a.severity?.toLowerCase()}`}>
+          <span className={`badge badge-${a.severity?.toLowerCase()}`}>{a.severity}</span>
+          &nbsp;<strong>{a.title}</strong> — {a.sector}
+          <br />
+          <small style={{ color: "var(--text-muted)" }}>{a.channel} · {a.recipients} destinatarios · {new Date(a.sentAt).toLocaleString("es-CL")}</small>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ── ReportsTable (compacta para RF-01) ────────────────────────────────
+function ReportsTable({ reports, brigades, onUpdate }) {
   return (
     <div className="table-wrap">
       <table>
-        <thead><tr>{columns.map((c) => <th key={c}>{c}</th>)}</tr></thead>
+        <thead>
+          <tr>
+            {["Sector", "Tipo", "Severidad", "Estado", "Brigada"].map((h) => <th key={h}>{h}</th>)}
+          </tr>
+        </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.id} className={sevClass(row.severity)}>
-              {columns.map((c) => <td key={c}>{badge(row[c], c)}</td>)}
+          {reports.map((r) => (
+            <tr key={r.id} className={`sev-${r.severity?.toLowerCase()}`}>
+              <td>{r.sector}</td>
+              <td style={{ fontSize: ".82rem" }}>{r.type}</td>
+              <td><SevBadge val={r.severity} /></td>
+              <td>
+                <select className="inline-select" value={r.status}
+                  onChange={(e) => onUpdate(r.id, "status", e.target.value)}>
+                  {["Pendiente","En verificacion","Activo","Controlado","Descartado"].map((s) => <option key={s}>{s}</option>)}
+                </select>
+              </td>
+              <td>
+                <select className="inline-select" value={r.assignedBrigade}
+                  onChange={(e) => onUpdate(r.id, "assignedBrigade", e.target.value)}>
+                  <option>Sin asignar</option>
+                  {brigades.map((b) => <option key={b}>{b}</option>)}
+                </select>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -256,19 +415,73 @@ function Table({ rows, columns }) {
   );
 }
 
-function MapPoint({ item, type }) {
-  const left = type === "fire"
-    ? 20 + Math.abs(item.lng + 71.36) * 250
-    : 45 + Math.abs(item.lng + 71.31) * 220;
-  const top = type === "fire"
-    ? 20 + Math.abs(item.lat + 34.94) * 520
-    : 30 + Math.abs(item.lat + 34.96) * 470;
+// ── CoordTable (RF-05 — sólo focos activos/pendientes) ────────────────
+function CoordTable({ reports, brigades, onUpdate }) {
+  const active = reports.filter((r) => ["Activo", "Pendiente", "En verificacion"].includes(r.status));
   return (
-    <span
-      className={`map-point ${type}`}
+    <div className="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            {["#", "Sector", "Tipo", "Severidad", "Estado", "Brigada asignada", "Reportado"].map((h) => <th key={h}>{h}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {active.map((r) => (
+            <tr key={r.id} className={`sev-${r.severity?.toLowerCase()}`}>
+              <td style={{ fontSize: ".8rem", color: "var(--text-muted)" }}>{r.id}</td>
+              <td><strong>{r.sector}</strong></td>
+              <td style={{ fontSize: ".82rem" }}>{r.type}</td>
+              <td><SevBadge val={r.severity} /></td>
+              <td>
+                <select className="inline-select" value={r.status}
+                  onChange={(e) => onUpdate(r.id, "status", e.target.value)}>
+                  {["Pendiente","En verificacion","Activo","Controlado","Descartado"].map((s) => <option key={s}>{s}</option>)}
+                </select>
+              </td>
+              <td>
+                <select className="inline-select brigade-select" value={r.assignedBrigade}
+                  onChange={(e) => onUpdate(r.id, "assignedBrigade", e.target.value)}>
+                  <option>Sin asignar</option>
+                  {brigades.map((b) => <option key={b}>{b}</option>)}
+                </select>
+              </td>
+              <td style={{ fontSize: ".78rem", color: "var(--text-muted)" }}>
+                {new Date(r.reportedAt).toLocaleString("es-CL", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+              </td>
+            </tr>
+          ))}
+          {active.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px" }}>Sin reportes activos o pendientes.</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ── SevBadge ──────────────────────────────────────────────────────────
+function SevBadge({ val }) {
+  const cls = { critica: "badge-critica", alta: "badge-alta", media: "badge-media", baja: "badge-baja" }[val?.toLowerCase()] || "";
+  return <span className={`badge ${cls}`}>{val}</span>;
+}
+
+// ── ApiCard ───────────────────────────────────────────────────────────
+function ApiCard({ data }) {
+  if (!data) return <p style={{ color: "var(--text-muted)" }}>Cargando...</p>;
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+}
+
+// ── MapPoint ──────────────────────────────────────────────────────────
+function MapPoint({ item, type }) {
+  const left = type === "fire"  ? 20 + Math.abs(item.lng + 71.36) * 250
+             : type === "risk"  ? 15 + Math.abs(item.lng + 71.36) * 230
+             :                    45 + Math.abs(item.lng + 71.31) * 220;
+  const top  = type === "fire"  ? 20 + Math.abs(item.lat + 34.94) * 520
+             : type === "risk"  ? 25 + Math.abs(item.lat + 34.94) * 490
+             :                    30 + Math.abs(item.lat + 34.96) * 470;
+  return (
+    <span className={`map-point ${type}`}
       style={{ left: `${Math.min(left, 88)}%`, top: `${Math.min(top, 82)}%` }}
-      title={item.sector || item.name}
-    />
+      title={item.sector || item.name} />
   );
 }
 
