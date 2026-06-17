@@ -186,8 +186,23 @@ function App() {
                 <Panel title="👥 Actores del sistema" subtitle="Usuarios que operarán SIGIF">
                   <CompactList items={data.users.map((u) => `${u.role}: ${u.name} — ${u.access}`)} />
                 </Panel>
-                <Panel title="🏛 Estado SENAPRED" subtitle="RF-04 — alerta regional">
-                  <ApiCard data={data.senapred} />
+                <Panel title="🏛 Estado SENAPRED" subtitle="Alerta regional">
+                  {data.senapred && (
+                    <div className="integration-status">
+                      <div className="int-row">
+                        <span className="int-label">Alerta regional</span>
+                        <span className={`badge ${data.senapred.regionalAlert?.toLowerCase().includes("roja") ? "badge-critica" : "badge-alta"}`}>{data.senapred.regionalAlert}</span>
+                      </div>
+                      <div className="int-row">
+                        <span className="int-label">Riesgo meteorológico</span>
+                        <span className="badge badge-alta">{data.senapred.weatherRisk}</span>
+                      </div>
+                      <div className="int-recommendation">
+                        <span className="int-label">Recomendación</span>
+                        <p>{data.senapred.recommendation}</p>
+                      </div>
+                    </div>
+                  )}
                 </Panel>
               </div>
             </>
