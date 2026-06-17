@@ -486,6 +486,46 @@ tr.sev-alta    td:first-child { border-left: 3px solid var(--yellow-bright); }
 /* ── Alert item ──────────────────────────────────────────────────── */
 .alert-item { line-height: 1.5; }
 
+/* ── Integration cards ───────────────────────────────────────────── */
+.integration-status { display: grid; gap: 12px; }
+
+.int-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--surface-alt);
+  border-left: 3px solid var(--border);
+}
+
+.int-label {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.int-value {
+  color: var(--green-dark);
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.int-big {
+  font-size: 1.6rem;
+  color: var(--navy-mid);
+}
+
+.int-recommendation {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--yellow-pale);
+  border-left: 3px solid var(--yellow-bright);
+}
+
+.int-recommendation .int-label { display: block; margin-bottom: 5px; }
+.int-recommendation p { margin: 0; font-size: 0.87rem; color: #5a3e00; line-height: 1.5; }
+
 /* ── Map risk point ──────────────────────────────────────────────── */
 .map-point.risk, .dot.risk { background: var(--green-mid); border: 2px dashed #fff; }
 

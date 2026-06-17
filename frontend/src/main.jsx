@@ -32,7 +32,8 @@ async function postJson(path, body) {
 function App() {
   const [data, setData] = useState({
     summary: null, users: [], reports: [], brigades: [],
-    alerts: [], riskZones: [], senapred: null, bomberos: null, stats: null
+    alerts: [], riskZones: [], senapred: null, bomberos: null,
+    senapredEvents: [], firefighterIncidents: [], stats: null
   });
   const [reportForm, setReportForm] = useState({
     sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260"
@@ -44,7 +45,8 @@ function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
 
   async function loadData() {
-    const [summary, users, reports, brigades, alerts, riskZones, senapred, bomberos, stats] =
+    const [summary, users, reports, brigades, alerts, riskZones,
+           senapred, senapredEventsRes, bomberos, firefighterIncidentsRes, stats] =
       await Promise.all([
         fetchJson("/api/summary"),
         fetchJson("/api/users"),
@@ -53,10 +55,17 @@ function App() {
         fetchJson("/api/alerts"),
         fetchJson("/api/risk-zones"),
         fetchJson("/api/mock/senapred/status"),
+        fetchJson("/api/mock/senapred/events"),
         fetchJson("/api/mock/bomberos/resources"),
+        fetchJson("/api/mock/bomberos/incidents"),
         fetchJson("/api/stats"),
       ]);
-    setData({ summary, users, reports, brigades, alerts, riskZones, senapred, bomberos, stats });
+    setData({
+      summary, users, reports, brigades, alerts, riskZones,
+      senapred, senapredEvents: senapredEventsRes?.events ?? [],
+      bomberos, firefighterIncidents: firefighterIncidentsRes?.incidents ?? [],
+      stats
+    });
   }
 
   useEffect(() => {
@@ -302,16 +311,96 @@ function App() {
             </Panel>
           )}
 
-          {/* ── TAB: RF-04 APIS ── */}
+          {/* ── TAB: RF-04 INTEGRACIÓN ── */}
           {activeTab === "apis" && (
-            <div className="grid two-columns">
-              <Panel title="🏛 API SENAPRED mock" subtitle="Estado regional y nivel de alerta simulado">
-                <ApiCard data={data.senapred} />
-              </Panel>
-              <Panel title="🚒 API Bomberos mock" subtitle="Recursos operativos disponibles simulados">
-                <ApiCard data={data.bomberos} />
-              </Panel>
-            </div>
+            <>
+              <div className="grid two-columns">
+                <Panel title="🏛 SENAPRED — Estado regional" subtitle="Integración mock vía API REST">
+                  {data.senapred && (
+                    <div className="integration-status">
+                      <div className="int-row">
+                        <span className="int-label">Comuna</span>
+                        <span className="int-value">{data.senapred.commune}</span>
+                      </div>
+                      <div className="int-row">
+                        <span className="int-label">Alerta regional</span>
+                        <span className={`badge ${data.senapred.regionalAlert?.toLowerCase().includes("roja") ? "badge-critica" : "badge-alta"}`}>{data.senapred.regionalAlert}</span>
+                      </div>
+                      <div className="int-row">
+                        <span className="int-label">Riesgo meteorológico</span>
+                        <span className="badge badge-alta">{data.senapred.weatherRisk}</span>
+                      </div>
+                      <div className="int-recommendation">
+                        <span className="int-label">Recomendación</span>
+                        <p>{data.senapred.recommendation}</p>
+                      </div>
+                    </div>
+                  )}
+                </Panel>
+                <Panel title="🚒 Bomberos — Recursos disponibles" subtitle="Integración mock vía API REST">
+                  {data.bomberos && (
+                    <div className="integration-status">
+                      <div className="int-row">
+                        <span className="int-label">Unidades disponibles</span>
+                        <span className="int-value int-big">{data.bomberos.availableUnits}</span>
+                      </div>
+                      <div className="int-row">
+                        <span className="int-label">Camiones aljibe</span>
+                        <span className="int-value">{data.bomberos.waterTrucks}</span>
+                      </div>
+                      <div className="int-row">
+                        <span className="int-label">Voluntarios de turno</span>
+                        <span className="int-value int-big">{data.bomberos.volunteersOnDuty}</span>
+                      </div>
+                      <div className="int-row">
+                        <span className="int-label">Canal de radio</span>
+                        <span className="int-value">{data.bomberos.radioChannel}</span>
+                      </div>
+                    </div>
+                  )}
+                </Panel>
+              </div>
+              <div className="grid two-columns" style={{ marginTop: 18 }}>
+                <Panel title="📋 SENAPRED — Eventos activos" subtitle="Historial de alertas regionales">
+                  <div className="table-wrap">
+                    <table>
+                      <thead><tr>{["ID", "Nivel", "Comuna", "Estado", "Recursos"].map((h) => <th key={h}>{h}</th>)}</tr></thead>
+                      <tbody>
+                        {data.senapredEvents.map((ev) => (
+                          <tr key={ev.id}>
+                            <td style={{ fontSize: ".78rem", color: "var(--text-muted)", fontFamily: "monospace" }}>{ev.id}</td>
+                            <td><span className={`badge ${ev.level?.includes("Roja") ? "badge-critica" : ev.level?.includes("Amarilla") ? "badge-alta" : "badge-media"}`}>{ev.level}</span></td>
+                            <td>{ev.commune}</td>
+                            <td><span className={`badge ${ev.status === "Vigente" ? "badge-critica" : ev.status === "Monitoreo" ? "badge-alta" : "badge-baja"}`}>{ev.status}</span></td>
+                            <td style={{ fontSize: ".82rem" }}>{ev.resources}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Panel>
+                <Panel title="🚨 Bomberos — Incidentes en curso" subtitle="Unidades despachadas y en terreno">
+                  <div className="table-wrap">
+                    <table>
+                      <thead><tr>{["ID", "Unidad", "Sector", "Estado", "ETA"].map((h) => <th key={h}>{h}</th>)}</tr></thead>
+                      <tbody>
+                        {data.firefighterIncidents.map((inc) => (
+                          <tr key={inc.id}>
+                            <td style={{ fontSize: ".78rem", color: "var(--text-muted)", fontFamily: "monospace" }}>{inc.id}</td>
+                            <td>{inc.unit}</td>
+                            <td>{inc.sector}</td>
+                            <td><span className={`badge ${inc.status === "En terreno" ? "badge-critica" : inc.status === "Despachado" ? "badge-alta" : "badge-media"}`}>{inc.status}</span></td>
+                            <td style={{ fontWeight: 700, color: inc.etaMinutes === 0 ? "var(--red-fire)" : "var(--text-main)" }}>
+                              {inc.etaMinutes === 0 ? "En sitio" : `${inc.etaMinutes} min`}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Panel>
+              </div>
+            </>
           )}
 
         </div>
