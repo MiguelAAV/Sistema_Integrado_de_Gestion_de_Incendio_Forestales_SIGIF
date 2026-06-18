@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="flameGradV" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#1F8A4C"></stop>
+      <stop offset="50%" stop-color="#F2B705"></stop>
+      <stop offset="100%" stop-color="#E23A1E"></stop>
+    </linearGradient>
+  </defs>
+  <path d="M50 7 C 71 7 85 23 85 43 C 85 67 50 94 50 94 C 50 94 15 67 15 43 C 15 23 29 7 50 7 Z" fill="url(#flameGradV)"></path>
+  <circle cx="50" cy="42" r="19" fill="#fff"></circle>
+  <path d="M50 28 C 55 37 61 41 59 50 C 57 59 52 63 50 63 C 48 63 43 59 42 51 C 41 46 44 44 46 39 C 47 43 48 45 50 43 C 52 41 51 34 50 28 Z" fill="#E23A1E"></path>
+</svg>

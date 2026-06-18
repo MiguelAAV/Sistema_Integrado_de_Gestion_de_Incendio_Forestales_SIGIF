@@ -123,7 +123,10 @@ function App() {
         <section className="hero">
           <div className="hero-content">
             <p className="eyebrow">Municipalidad Valle del Sol</p>
-            <h1><span className="green">SIG</span><span className="fire">IF</span></h1>
+            <div className="hero-title-row">
+              <img src="/escudo-moderno-icono.svg" alt="Escudo SIGIF" className="hero-shield" />
+              <h1><span className="green">SIG</span><span className="fire">IF</span></h1>
+            </div>
             <p>Sistema Integrado de Gestión de Incendios Forestales — detecta focos, coordina brigadas, emite alertas y consulta integraciones de Bomberos y SENAPRED.</p>
           </div>
           <div className="hero-kpi">
@@ -583,6 +586,15 @@ function MapPoint({ item, type }) {
   const top  = type === "fire"  ? 20 + Math.abs(item.lat + 34.94) * 520
              : type === "risk"  ? 25 + Math.abs(item.lat + 34.94) * 490
              :                    30 + Math.abs(item.lat + 34.96) * 470;
+
+  if (type === "fire") {
+    return (
+      <img src="/pin-deteccion-icono.svg" alt="Foco"
+        className="map-pin-svg"
+        style={{ left: `${Math.min(left, 88)}%`, top: `${Math.min(top, 82)}%` }}
+        title={item.sector} />
+    );
+  }
   return (
     <span className={`map-point ${type}`}
       style={{ left: `${Math.min(left, 88)}%`, top: `${Math.min(top, 82)}%` }}
