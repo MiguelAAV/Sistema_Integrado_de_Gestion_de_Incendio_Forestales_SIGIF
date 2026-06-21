@@ -4,12 +4,14 @@ import "./styles.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
-// ── Data fetching ─────────────────────────────────────────────────────
+// ── Métodos para peticiones HTTP (API Fetch) ──────────────────────────
+// Realiza una petición GET y retorna el JSON resultante
 async function fetchJson(path) {
   const res = await fetch(`${API_URL}${path}`);
   return res.json();
 }
 
+// Realiza una petición PATCH para actualizar datos parciales
 async function patchJson(path, body) {
   const res = await fetch(`${API_URL}${path}`, {
     method: "PATCH",
@@ -19,6 +21,7 @@ async function patchJson(path, body) {
   return res;
 }
 
+// Realiza una petición POST para crear nuevos recursos en el servidor
 async function postJson(path, body) {
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
@@ -28,22 +31,28 @@ async function postJson(path, body) {
   return res;
 }
 
-// ── App ───────────────────────────────────────────────────────────────
+// ── Componente Principal de la Aplicación ─────────────────────────────
 function App() {
+  // Estado que contiene toda la información de la base de datos mock cargada del backend
   const [data, setData] = useState({
     summary: null, users: [], reports: [], brigades: [],
     alerts: [], riskZones: [], senapred: null, bomberos: null,
     senapredEvents: [], firefighterIncidents: [], stats: null
   });
+  // Estado para controlar el formulario de reporte ciudadano (RF-01)
   const [reportForm, setReportForm] = useState({
     sector: "", type: "Humo visible", severity: "Media", reporterName: "", lat: "-35.000", lng: "-71.260"
   });
+  // Estado para controlar el formulario de alertas masivas (RF-03)
   const [alertForm, setAlertForm] = useState({
     title: "", sector: "", severity: "Alta", channel: "Web/SMS"
   });
+  // Estado para mostrar notificaciones informativas o de error en la barra superior
   const [message, setMessage] = useState({ text: "", type: "info" });
+  // Estado para el control de la pestaña activa en la interfaz
   const [activeTab, setActiveTab] = useState("dashboard");
 
+  // Carga paralela de todos los endpoints de la API al iniciar o actualizar
   async function loadData() {
     const [summary, users, reports, brigades, alerts, riskZones,
            senapred, senapredEventsRes, bomberos, firefighterIncidentsRes, stats] =
@@ -68,18 +77,20 @@ function App() {
     });
   }
 
+  // Ejecuta la carga inicial de datos cuando el componente se monta
   useEffect(() => {
     loadData().catch(() =>
       setMessage({ text: "No se pudo conectar al backend local. Revisa que esté activo en el puerto 4000.", type: "warn" })
     );
   }, []);
 
+  // Muestra notificaciones flotantes temporales
   function notify(text, type = "ok") {
     setMessage({ text, type });
     setTimeout(() => setMessage({ text: "", type: "info" }), 4000);
   }
 
-  // RF-01 — Crear reporte ciudadano
+  // RF-01 — Registro de reporte ciudadano y recarga de datos
   async function createReport(e) {
     e.preventDefault();
     const res = await postJson("/api/reports", reportForm);
@@ -89,7 +100,7 @@ function App() {
     await loadData();
   }
 
-  // RF-03 — Emitir alerta masiva
+  // RF-03 — Envío de alerta comunal masiva con actualización de destinatarios
   async function emitAlert(e) {
     e.preventDefault();
     const res = await postJson("/api/alerts", alertForm);
@@ -100,7 +111,7 @@ function App() {
     await loadData();
   }
 
-  // RF-05 — Actualizar estado / asignar brigada
+  // RF-05 — Actualización del estado del foco o asignación de brigada desde terreno/central
   async function updateReport(id, field, value) {
     const body = { [field]: value };
     const res = await patchJson(`/api/reports/${id}`, body);

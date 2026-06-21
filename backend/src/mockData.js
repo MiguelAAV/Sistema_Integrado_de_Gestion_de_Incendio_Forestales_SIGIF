@@ -1,3 +1,4 @@
+// Usuarios y actores simulados del sistema con sus respectivos roles y niveles de acceso
 export const users = [
   { id: 1, name: "Joaquin Rivas", role: "Alcalde", area: "Autoridad", access: "Dashboard ejecutivo y reportes" },
   { id: 2, name: "Carolina Cisternas", role: "Directora de Gestion de Riesgos", area: "Emergencias", access: "Mapa GIS, alertas y coordinacion" },
@@ -11,6 +12,7 @@ export const users = [
   { id: 10, name: "SENAPRED Regional", role: "Organismo regulador", area: "SENAPRED", access: "API mock de alertas y estado regional" }
 ];
 
+// Reportes iniciales de focos de incendio y quemas en la comuna
 export const fireReports = [
   { id: 1, sector: "Los Aromos", type: "Humo visible", severity: "Alta", status: "Activo", source: "Ciudadano", reportedAt: "2026-01-18T14:25:00", lat: -34.982, lng: -71.235, assignedBrigade: "Brigada Norte" },
   { id: 2, sector: "Camino El Molino", type: "Quema no autorizada", severity: "Media", status: "En verificacion", source: "Ciudadano", reportedAt: "2026-01-18T15:10:00", lat: -35.011, lng: -71.278, assignedBrigade: "Brigada Sur" },
@@ -24,18 +26,21 @@ export const fireReports = [
   { id: 10, sector: "Laguna Chica", type: "Quema agricola", severity: "Media", status: "Controlado", source: "Bomberos", reportedAt: "2026-01-17T09:20:00", lat: -34.971, lng: -71.192, assignedBrigade: "Brigada Norte" }
 ];
 
+// Brigadas municipales disponibles en el territorio, su estado y posición geolocalizada actual
 export const brigades = [
   { id: 1, name: "Brigada Norte", status: "En ruta", members: 6, vehicle: "Camioneta B-01", lat: -34.972, lng: -71.248, currentTask: "Pinar Alto" },
   { id: 2, name: "Brigada Sur", status: "En combate", members: 7, vehicle: "Camioneta B-02", lat: -35.043, lng: -71.295, currentTask: "Villa El Roble" },
   { id: 3, name: "Brigada Central", status: "Disponible", members: 5, vehicle: "Camion aljibe C-01", lat: -35.000, lng: -71.260, currentTask: "Base municipal" }
 ];
 
+// Alertas masivas comunales emitidas históricamente a los celulares y web de los vecinos
 export const alerts = [
   { id: 1, title: "Alerta roja comunal", channel: "Web/SMS", sector: "Villa El Roble", severity: "Critica", sentAt: "2026-01-18T16:05:00", recipients: 1200 },
   { id: 2, title: "Evitar transito", channel: "Web", sector: "Pinar Alto", severity: "Alta", sentAt: "2026-01-18T15:44:00", recipients: 430 },
   { id: 3, title: "Reporte preventivo recibido", channel: "App", sector: "La Quebrada", severity: "Media", sentAt: "2026-01-18T12:16:00", recipients: 1 }
 ];
 
+// Zonas forestales o de interfaz urbano-rural previamente catalogadas con susceptibilidad a incendios
 export const riskZones = [
   { id: 1, name: "Plantaciones Pinar Alto", risk: "Critico", lat: -34.956, lng: -71.304, reason: "Pino y eucalipto con viento fuerte" },
   { id: 2, name: "Corredor Villa El Roble", risk: "Alto", lat: -35.046, lng: -71.291, reason: "Viviendas cercanas a masa forestal" },
@@ -43,12 +48,14 @@ export const riskZones = [
   { id: 4, name: "La Quebrada", risk: "Medio", lat: -34.998, lng: -71.331, reason: "Historial de quemas no autorizadas" }
 ];
 
+// Eventos de alerta regional vigentes según la plataforma mock de SENAPRED
 export const senapredEvents = [
   { id: "SNP-001", level: "Alerta Roja", commune: "Valle del Sol", status: "Vigente", resources: "Coordinacion regional activada" },
   { id: "SNP-002", level: "Alerta Amarilla", commune: "San Jorge Rural", status: "Monitoreo", resources: "Evaluacion preventiva" },
   { id: "SNP-003", level: "Informativa", commune: "Valle del Sol", status: "Cerrada", resources: "Reporte meteorologico archivado" }
 ];
 
+// Incidentes y carros de Bomberos despachados simulados por la plataforma mock externa
 export const firefighterIncidents = [
   { id: "BMB-101", unit: "Primera Compania", sector: "Pinar Alto", status: "Despachado", etaMinutes: 8 },
   { id: "BMB-102", unit: "Segunda Compania", sector: "Villa El Roble", status: "En terreno", etaMinutes: 0 },
